@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 20px auto;
+            min-width: 200px;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .analyze-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .result-card {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #667eea;
+            margin-bottom: 20px;
+        }
+
+        .sentiment-label {
+            font-size: 1.8em;
+            font-weight: 700;
+            text-align: center;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .positive {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .negative {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .neutral {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .score-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-label {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .score-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .score-description {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 8px;
+        }
+
+        .examples {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f2ff;
+            border-radius: 12px;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .example-btn {
+            background: white;
+            border: 2px solid #667eea;
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .scores-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .example-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 Sentiment Analyzer</h1>
+        <p class="subtitle">Analyze the emotional tone of any text using advanced natural language processing</p>
+        
+        <div class="input-section">
+            <label for="textInput">Enter your text for analysis:</label>
+            <textarea id="textInput" placeholder="Type or paste your text here... For example: 'I love this new technology! It's absolutely amazing and makes my life so much easier.'"></textarea>
+            <button class="analyze-btn" onclick="analyzeSentiment()">Analyze Sentiment</button>
+        </div>
+
+        <div class="examples">
+            <h3>Try these examples:</h3>
+            <div class="example-buttons">
+                <button class="example-btn" onclick="setExample('I love this product! It exceeded all my expectations.')">Positive Example</button>
+                <button class="example-btn" onclick="setExample('This is terrible. I hate everything about it.')">Negative Example</button>
+                <button class="example-btn" onclick="setExample('The weather is okay today.')">Neutral Example</button>
+                <button class="example-btn" onclick="setExample('I think this movie might be good, but I am not sure if everyone will enjoy it.')">Mixed Example</button>
+            </div>
+        </div>
+
+        <div id="results" class="results">
+            <div class="result-card">
+                <div id="sentimentLabel" class="sentiment-label"></div>
+                <div class="scores-grid">
+                    <div class="score-item">
+                        <div class="score-label">Polarity Score</div>
+                        <div id="polarityScore" class="score-value"></div>
+                        <div class="score-description">-1 (negative) to +1 (positive)</div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-label">Subjectivity Score</div>
+                        <div id="subjectivityScore" class="score-value"></div>
+                        <div class="score-description">0 (objective) to 1 (subjective)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple sentiment analysis implementation
+        // In a real Flask app, this would be handled by the backend with TextBlob
+        function analyzeSentiment() {
+            const text = document.getElementById('textInput').value.trim();
+            
+            if (!text) {
+                alert('Please enter some text to analyze!');
+                return;
+            }
+
+            // Simple keyword-based sentiment analysis for demo purposes
+            // In production, this would use TextBlob on the Flask backend
+            const positiveWords = ['love', 'great', 'amazing', 'excellent', 'wonderful', 'fantastic', 'good', 'best', 'awesome', 'perfect', 'beautiful', 'happy', 'joy', 'brilliant', 'outstanding'];
+            const negativeWords = ['hate', 'terrible', 'awful', 'bad', 'worst', 'horrible', 'disgusting', 'sad', 'angry', 'disappointed', 'annoying', 'frustrating', 'pathetic'];
+
+            const words = text.toLowerCase().split(/\s+/);
+            let positiveCount = 0;
+            let negativeCount = 0;
+            let subjectiveWords = ['think', 'feel', 'believe', 'opinion', 'seems', 'appears', 'probably', 'maybe', 'perhaps', 'suppose'];
+            let subjectiveCount = 0;
+
+            words.forEach(word => {
+                if (positiveWords.includes(word)) positiveCount++;
+                if (negativeWords.includes(word)) negativeCount++;
+                if (subjectiveWords.includes(word)) subjectiveCount++;
+            });
+
+            // Calculate polarity (-1 to 1)
+            const totalSentimentWords = positiveCount + negativeCount;
+            let polarity = 0;
+            if (totalSentimentWords > 0) {
+                polarity = (positiveCount - negativeCount) / totalSentimentWords;
+            }
+
+            // Calculate subjectivity (0 to 1)
+            const subjectivity = Math.min((subjectiveCount + totalSentimentWords) / words.length, 1);
+
+            // Determine sentiment category
+            let sentiment = 'neutral';
+            let sentimentClass = 'neutral';
+            
+            if (polarity > 0.1) {
+                sentiment = 'positive';
+                sentimentClass = 'positive';
+            } else if (polarity < -0.1) {
+                sentiment = 'negative';
+                sentimentClass = 'negative';
+            }
+
+            // Display results
+            document.getElementById('sentimentLabel').textContent = sentiment;
+            document.getElementById('sentimentLabel').className = `sentiment-label ${sentimentClass}`;
+            document.getElementById('polarityScore').textContent = polarity.toFixed(3);
+            document.getElementById('subjectivityScore').textContent = subjectivity.toFixed(3);
+            
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function setExample(exampleText) {
+            document.getElementById('textInput').value = exampleText;
+            analyzeSentiment();
+        }
+
+        // Allow Enter key to trigger analysis (Ctrl+Enter for new line)
+        document.getElementById('textInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.ctrlKey && !e.shiftKey) {
+                e.preventDefault();
+                analyzeSentiment();
+            }
+        });
+    </script>
+</body>
+</html>
